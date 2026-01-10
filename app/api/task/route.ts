@@ -20,25 +20,28 @@ export async function GET(request: Request) {
   }
 
   const url = new URL(request.url);
-  const startDate = url.searchParams.get('startDate');
-  const endDate = url.searchParams.get('endDate');
+  let created_at = url.searchParams.get('created_at');
+  if (!created_at) {
+    created_at = new Date().toISOString().split('T')[0];
+  }
 
   const conditions = [eq(task.userId, user.id)];
 
-  if (startDate) {
-    const s = new Date(startDate);
-    conditions.push(gte(task.createdAt, s));
-  }
-  if (endDate) {
-    const e = new Date(endDate);
-    conditions.push(lte(task.createdAt, e));
+  if (created_at) {
+    // Build start/end bounds for the provided date so we match the whole day
+    const start = new Date(created_at);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setHours(23, 59, 59, 999);
+
+    conditions.push(gte(task.createdAt, start), lte(task.createdAt, end));
   }
 
   const builder = db.select().from(task).where(and(...conditions));
 
   const data = await builder;
 
-  return NextResponse.json(data);
+  return NextResponse.json({ data, created_at });
 }
 
 

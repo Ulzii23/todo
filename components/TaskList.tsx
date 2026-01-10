@@ -1,26 +1,50 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTasks } from '@/lib/tasksContext'
 
-export default function TaskList() {
-  const { tasks, refresh, toggleTask, deleteTask } = useTasks();
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
+import {
+  ButtonGroup,
+} from "@/components/ui/button-group"
+import { Button } from "@/components/ui/button"
+import { ArrowRightIcon, ArrowLeftIcon } from "lucide-react"
+import moment from 'moment';
 
-  const applyFilter = async () => {
-    await refresh({ startDate: startDate || undefined, endDate: endDate || undefined });
+export default function TaskList() {
+  const { tasks, refresh, toggleTask, deleteTask, createdAt } = useTasks();
+  const [fetchDate, setFetchDate] = useState<string>('');
+
+  useEffect(()=>{
+
+    setFetchDate(createdAt);
+  },[createdAt]);
+
+
+
+  const applyFilter = async (opt: string) => {
+    let fDate = moment(createdAt);
+    if(opt === 'prev'){
+      fDate = fDate.subtract(1, 'days');
+    }else if(opt === 'next'){
+      fDate = fDate.add(1, 'days');
+    }
+    const formattedDate = fDate.format('YYYY-MM-DD');
+
+    await refresh({ createdAt: formattedDate || undefined});
   };
 
+  
   return (
     <div className="space-y-2 mt-6">
-      <div className="flex gap-2 items-center mb-4">
-        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="border p-1 rounded" />
-        <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="border p-1 rounded" />
-        <button onClick={applyFilter} className="px-3 py-1 bg-gray-200 rounded">Filter</button>
-        <button onClick={() => refresh()} className="px-3 py-1 bg-gray-100 rounded">Clear</button>
-      </div>
-
+      <ButtonGroup className='w-full'>
+        <Button variant="outline" size="lg" className='flex-1' aria-label="Previous" onClick={()=>applyFilter("prev")}>
+          <ArrowLeftIcon />
+        </Button>
+        <Button variant="outline" size="lg" className='flex-2'>{createdAt ? new Date(createdAt).toLocaleDateString() : ''}</Button>
+        <Button variant="outline" size="lg" aria-label="Next" className='flex-1' onClick={()=>applyFilter("next")}>
+          <ArrowRightIcon />
+        </Button>
+      </ButtonGroup>
       {tasks.length === 0 ? (
         <p className="text-muted-foreground">No tasks yet.</p>
       ) : (

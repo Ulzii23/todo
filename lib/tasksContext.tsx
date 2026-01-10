@@ -13,8 +13,9 @@ interface Task {
 
 interface TasksContextType {
   tasks: Task[];
+  createdAt: string;
   addTask: (task: Task) => void;
-  refresh: (opts?: { startDate?: string; endDate?: string }) => Promise<void>;
+  refresh: (opts?: { createdAt?: string }) => Promise<void>;
   toggleTask: (id: number, isDone: boolean) => Promise<void>;
   deleteTask: (id: number) => Promise<void>;
 }
@@ -23,17 +24,18 @@ const TasksContext = createContext<TasksContextType | undefined>(undefined);
 
 export function TasksProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [createdAt, setCreatedAt] = useState<Date | null>(null);
 
-  const fetchTasks = async (opts?: { startDate?: string; endDate?: string }) => {
+  const fetchTasks = async (opts?: { createdAt?: string}) => {
     try {
       const params = new URLSearchParams();
-      if (opts?.startDate) params.set('startDate', opts.startDate);
-      if (opts?.endDate) params.set('endDate', opts.endDate);
+      if (opts?.createdAt) params.set('created_at', opts.createdAt);
       const url = '/api/task' + (params.toString() ? `?${params.toString()}` : '');
       const res = await fetch(url);
       if (!res.ok) return;
       const data = await res.json();
-      setTasks(data || []);
+      setTasks(data.data || []);
+      setCreatedAt(data.created_at ? new Date(data.created_at) : null);
     } catch (err) {
       console.error('Failed to fetch tasks', err);
     }
@@ -79,7 +81,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <TasksContext.Provider value={{ tasks, addTask, refresh: fetchTasks, toggleTask, deleteTask }}>
+    <TasksContext.Provider value={{ tasks, addTask, refresh: fetchTasks, toggleTask, deleteTask, createdAt }}>
       {children}
     </TasksContext.Provider>
   );
