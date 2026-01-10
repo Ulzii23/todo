@@ -1,0 +1,60 @@
+import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import db from '@/db';
+import { task } from '@/db/schema';
+import { eq, and } from 'drizzle-orm';
+
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const cookieStore = await cookies();
+  const userCookie = cookieStore.get('user')?.value;
+  if (!userCookie) return NextResponse.json({ message: 'Not authenticated' }, { status: 401 });
+
+  let user;
+  try { user = JSON.parse(userCookie); } catch { return NextResponse.json({ message: 'Invalid user' }, { status: 400 }); }
+
+  const body = await request.json();
+  const updates: any = {};
+  if (typeof body.isDone === 'boolean') updates.isDone = body.isDone;
+  if (typeof body.name === 'string') updates.name = body.name;
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ message: 'No valid fields' }, { status: 400 });
+  }
+
+  const taskId = Number(id);
+  console.log(taskId, 'taskIdtaskIdtaskId');
+  if (!Number.isFinite(taskId)) {
+    return NextResponse.json({ message: 'Invalid id' }, { status: 400 });
+  }
+
+  const updated = await db
+    .update(task)
+    .set(updates)
+    .where(and(eq(task.id, taskId), eq(task.userId, user.id)))
+    .returning();
+
+  if (!updated || updated.length === 0) return NextResponse.json({ message: 'Not found' }, { status: 404 });
+
+  return NextResponse.json(updated[0]);
+}
+
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const cookieStore = await cookies();
+  const userCookie = cookieStore.get('user')?.value;
+  if (!userCookie) return NextResponse.json({ message: 'Not authenticated' }, { status: 401 });
+
+  let user;
+  try { user = JSON.parse(userCookie); } catch { return NextResponse.json({ message: 'Invalid user' }, { status: 400 }); }
+
+  const taskId = Number(id);
+  console.log(taskId, 'taskIdtaskIdtaskId');
+  if (!Number.isFinite(taskId)) {
+    return NextResponse.json({ message: 'Invalid id' }, { status: 400 });
+  }
+
+  await db.delete(task).where(and(eq(task.id, taskId), eq(task.userId, user.id)));
+
+  return NextResponse.json({ ok: true });
+}
