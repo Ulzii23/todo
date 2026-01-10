@@ -24,7 +24,7 @@ const TasksContext = createContext<TasksContextType | undefined>(undefined);
 
 export function TasksProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [createdAt, setCreatedAt] = useState<Date | null>(null);
+  const [createdAt, setCreatedAt] = useState<string>('');
 
   const fetchTasks = async (opts?: { createdAt?: string}) => {
     try {
@@ -35,7 +35,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       if (!res.ok) return;
       const data = await res.json();
       setTasks(data.data || []);
-      setCreatedAt(data.created_at ? new Date(data.created_at) : null);
+      setCreatedAt(data.created_at);
     } catch (err) {
       console.error('Failed to fetch tasks', err);
     }
