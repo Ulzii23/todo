@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { useUser } from '@/lib/userContext';
 
 interface Task {
   id: number;
@@ -38,9 +39,15 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const { user } = useUser();
+
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    if (user) {
+      fetchTasks();
+    } else {
+      setTasks([]);
+    }
+  }, [user]);
 
   const addTask = (task: Task) => {
     setTasks(prev => [task, ...prev]);
