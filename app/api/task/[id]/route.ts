@@ -15,15 +15,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const body = await request.json();
   const updates: any = {};
-  if (typeof body.isDone === 'boolean') updates.isDone = body.isDone;
-  if (typeof body.name === 'string') updates.name = body.name;
+  if (typeof body.complete === 'boolean') updates.complete = body.complete;
+  if (typeof body.title === 'string') updates.title = body.title;
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ message: 'No valid fields' }, { status: 400 });
   }
 
   const taskId = Number(id);
-  console.log(taskId, 'taskIdtaskIdtaskId');
+
   if (!Number.isFinite(taskId)) {
     return NextResponse.json({ message: 'Invalid id' }, { status: 400 });
   }
@@ -49,7 +49,6 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   try { user = JSON.parse(userCookie); } catch { return NextResponse.json({ message: 'Invalid user' }, { status: 400 }); }
 
   const taskId = Number(id);
-  console.log(taskId, 'taskIdtaskIdtaskId');
   if (!Number.isFinite(taskId)) {
     return NextResponse.json({ message: 'Invalid id' }, { status: 400 });
   }

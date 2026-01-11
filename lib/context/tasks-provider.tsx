@@ -7,7 +7,7 @@ import { set } from 'zod';
 interface Task {
   id: number;
   title: string;
-  isDone: boolean;
+  complete: boolean;
   createdAt: string;
   updatedAt: string;
   task_at: string;
@@ -62,17 +62,17 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     setTasks(prev => [task, ...prev]);
   };
 
-  const toggleTask = async (id: number, isDone: boolean) => {
+  const toggleTask = async (id: number, complete: boolean) => {
     try {
       setLoading(true);
       const res = await fetch(`/api/task/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isDone }),
+        body: JSON.stringify({ complete }),
       });
       if (!res.ok) return;
       const updated = await res.json();
-      setTasks(prev => prev.map(t => (t.id === id ? { ...t, isDone: updated.isDone } : t)));
+      setTasks(prev => prev.map(t => (t.id === id ? { ...t, complete: updated.complete, updatedAt: updated.updatedAt } : t)));
     } catch (err) {
       console.error('Failed to toggle task', err);
     } finally {

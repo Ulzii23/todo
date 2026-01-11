@@ -12,7 +12,7 @@ export const task = pgTable("tasks", {
 
     title: varchar({ length: 255 }).notNull(),
 
-    isDone: boolean().default(false).notNull(),
+    complete: boolean().default(false).notNull(),
 
     task_at: date("task_at").notNull(),
 

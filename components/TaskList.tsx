@@ -25,7 +25,14 @@ export default function TaskList() {
     await refresh({ taskAt: formattedDate || undefined});
   };
 
-  
+  const sortedTasks = tasks.sort((a, b) => {
+    // false = 0, true = 1 → incomplete tasks first
+    if (a.complete === b.complete) {
+      return a.id - b.id; // keep the order by id if complete status is same
+    }
+    return a.complete ? 1 : -1;
+  });
+    
   return (
     <div className="space-y-2 mt-6">
       <ButtonGroup className='w-full'>
@@ -41,19 +48,19 @@ export default function TaskList() {
       {tasks.length === 0 ? (
         <p className="text-muted-foreground">No tasks yet.</p>
       ) : (
-        tasks.map(task => (
-          <div key={task.id} className="p-3 border rounded">
+        sortedTasks.map(task => (
+          <div key={task.id} className="py-1 px-2 border rounded">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <input type="checkbox" checked={task.isDone} onChange={() => toggleTask(task.id, !task.isDone)} disabled={loading} />
+                <input type="checkbox" checked={task.complete} onChange={() => toggleTask(task.id, !task.complete)} disabled={loading} />
                 <div>
-                  <div className={`font-medium ${task.isDone ? 'line-through text-gray-500' : ''}`}>{task.title}</div>
-                  <div className="text-xs text-muted-foreground">{moment(task.createdAt).format('YYYY-MM-DD HH:mm')}</div>
+                  <div className={`font-medium text-sm ${task.complete ? 'line-through text-gray-500' : ''}`}>{task.title}</div>
+                  { task.complete && <span className="text-xs text-gray-500">{moment(task.updatedAt).format('YYYY-MM-DD HH:mm')}</span>}
                 </div>
               </div>
               <div>
                 <Button onClick={() => deleteTask(task.id)} size={"icon-sm"} variant={"ghost"} disabled={loading}>
-                  <CircleXIcon className='text-destructive'/>
+                  <CircleXIcon className='text-sm text-muted-foreground'/>
                 </Button>
               </div>
             </div>
