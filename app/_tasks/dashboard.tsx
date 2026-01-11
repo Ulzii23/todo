@@ -2,7 +2,7 @@ import { useTasks } from "@/lib/context/tasks-provider";
 
 const Dashboard = () => {
 const { tasks, loading } = useTasks();
-const successRate = tasks ? (tasks.filter(task => task.isDone).length / tasks.length) * 100 : 0;
+const successRate = tasks ? (tasks.filter(task => task.complete).length / tasks.length) * 100 : 0;
 if(loading){
     return <p>Loading...</p>
 }
