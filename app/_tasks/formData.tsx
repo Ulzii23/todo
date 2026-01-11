@@ -31,7 +31,7 @@ const FormData = () => {
   })
 
   // 2. Define a submit handler.
-  const { addTask, taskAt } = useTasks();
+  const { addTask, taskAt, loading } = useTasks();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -63,15 +63,17 @@ const FormData = () => {
               <FormControl>
                 <div className="relative">
                   <Input
-                    placeholder="New task"
+                    placeholder="Add task"
                     className="pr-24" // space for button
                     {...field}
+                    disabled={loading}
                   />
 
                   <Button
                     type="submit"
                     variant={"default"}
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-8"
+                    disabled={loading}
                   >
                     <PlusIcon />
                   </Button>

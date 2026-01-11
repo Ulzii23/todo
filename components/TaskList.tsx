@@ -1,17 +1,17 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
 import { useTasks } from '@/lib/context/tasks-provider'
 
 import {
   ButtonGroup,
 } from "@/components/ui/button-group"
 import { Button } from "@/components/ui/button"
-import { ArrowRightIcon, ArrowLeftIcon } from "lucide-react"
+import { ArrowRightIcon, ArrowLeftIcon, CircleXIcon } from "lucide-react"
 import moment from 'moment';
+import Dashboard from '@/app/_tasks/dashboard'
 
 export default function TaskList() {
-  const { tasks, refresh, toggleTask, deleteTask, taskAt } = useTasks();
+  const { tasks, refresh, toggleTask, deleteTask, taskAt, loading } = useTasks();
 
   const applyFilter = async (opt: string) => {
     let fDate = moment(taskAt);
@@ -37,6 +37,7 @@ export default function TaskList() {
           <ArrowRightIcon />
         </Button>
       </ButtonGroup>
+      <Dashboard/>
       {tasks.length === 0 ? (
         <p className="text-muted-foreground">No tasks yet.</p>
       ) : (
@@ -44,14 +45,16 @@ export default function TaskList() {
           <div key={task.id} className="p-3 border rounded">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <input type="checkbox" checked={task.isDone} onChange={() => toggleTask(task.id, !task.isDone)} />
+                <input type="checkbox" checked={task.isDone} onChange={() => toggleTask(task.id, !task.isDone)} disabled={loading} />
                 <div>
                   <div className={`font-medium ${task.isDone ? 'line-through text-gray-500' : ''}`}>{task.title}</div>
-                  <div className="text-sm text-gray-500">created_at {new Date(task.createdAt).toLocaleString()}</div>
+                  <div className="text-xs text-muted-foreground">{moment(task.createdAt).format('YYYY-MM-DD HH:mm')}</div>
                 </div>
               </div>
               <div>
-                <button onClick={() => deleteTask(task.id)} className="text-sm text-red-600">Delete</button>
+                <Button onClick={() => deleteTask(task.id)} size={"icon-sm"} variant={"ghost"} disabled={loading}>
+                  <CircleXIcon className='text-destructive'/>
+                </Button>
               </div>
             </div>
           </div>
