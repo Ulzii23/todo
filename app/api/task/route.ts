@@ -3,6 +3,7 @@ import { task } from "@/db/schema";
 import { cookies } from 'next/headers';
 import { eq, and, gte, lte } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
+import moment from 'moment';
 
 export async function GET(request: Request) {
   const cookieStore = await cookies();
@@ -28,15 +29,19 @@ export async function GET(request: Request) {
   const conditions = [eq(task.userId, user.id)];
 
   if (created_at) {
-    // Build start/end bounds for the provided date so we match the whole day
-    const start = new Date(created_at);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setHours(23, 59, 59, 999);
+    const start = moment(created_at, 'YYYY-MM-DD')
+      .startOf('day')
+      .toDate();
 
-    conditions.push(gte(task.createdAt, start), lte(task.createdAt, end));
+    const end = moment(created_at, 'YYYY-MM-DD')
+      .endOf('day')
+      .toDate();
+
+    conditions.push(
+      gte(task.createdAt, start),
+      lte(task.createdAt, end)
+    );
   }
-
   const builder = db.select().from(task).where(and(...conditions));
 
   const data = await builder;
