@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from 'react'
-import { useTasks } from '@/lib/tasksContext'
+import { useTasks } from '@/lib/context/tasks-provider'
 
 import {
   ButtonGroup,
@@ -11,18 +11,10 @@ import { ArrowRightIcon, ArrowLeftIcon } from "lucide-react"
 import moment from 'moment';
 
 export default function TaskList() {
-  const { tasks, refresh, toggleTask, deleteTask, createdAt } = useTasks();
-  const [fetchDate, setFetchDate] = useState<string>('');
-
-  useEffect(()=>{
-
-    setFetchDate(createdAt);
-  },[createdAt]);
-
-
+  const { tasks, refresh, toggleTask, deleteTask, taskAt } = useTasks();
 
   const applyFilter = async (opt: string) => {
-    let fDate = moment(createdAt);
+    let fDate = moment(taskAt);
     if(opt === 'prev'){
       fDate = fDate.subtract(1, 'days');
     }else if(opt === 'next'){
@@ -30,7 +22,7 @@ export default function TaskList() {
     }
     const formattedDate = fDate.format('YYYY-MM-DD');
 
-    await refresh({ createdAt: formattedDate || undefined});
+    await refresh({ taskAt: formattedDate || undefined});
   };
 
   
@@ -40,7 +32,7 @@ export default function TaskList() {
         <Button variant="outline" size="lg" className='flex-1' aria-label="Previous" onClick={()=>applyFilter("prev")}>
           <ArrowLeftIcon />
         </Button>
-        <Button variant="outline" size="lg" className='flex-2'>{createdAt ? new Date(createdAt).toLocaleDateString() : ''}</Button>
+        <Button variant="outline" size="lg" className='flex-2'>{taskAt ? new Date(taskAt).toLocaleDateString() : ''}</Button>
         <Button variant="outline" size="lg" aria-label="Next" className='flex-1' onClick={()=>applyFilter("next")}>
           <ArrowRightIcon />
         </Button>
@@ -54,8 +46,8 @@ export default function TaskList() {
               <div className="flex items-center gap-3">
                 <input type="checkbox" checked={task.isDone} onChange={() => toggleTask(task.id, !task.isDone)} />
                 <div>
-                  <div className={`font-medium ${task.isDone ? 'line-through text-gray-500' : ''}`}>{task.name}</div>
-                  <div className="text-sm text-gray-500">{new Date(task.createdAt).toLocaleString()}</div>
+                  <div className={`font-medium ${task.isDone ? 'line-through text-gray-500' : ''}`}>{task.title}</div>
+                  <div className="text-sm text-gray-500">created_at {new Date(task.createdAt).toLocaleString()}</div>
                 </div>
               </div>
               <div>

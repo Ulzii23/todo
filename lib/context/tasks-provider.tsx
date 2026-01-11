@@ -1,21 +1,22 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useUser } from '@/lib/userContext';
+import { useUser } from '@/lib/context/user-provider';
 
 interface Task {
   id: number;
-  name: string;
+  title: string;
   isDone: boolean;
   createdAt: string;
   updatedAt: string;
+  task_at: string;
 }
 
 interface TasksContextType {
   tasks: Task[];
-  createdAt: string;
+  taskAt: string;
   addTask: (task: Task) => void;
-  refresh: (opts?: { createdAt?: string }) => Promise<void>;
+  refresh: (opts?: { taskAt?: string }) => Promise<void>;
   toggleTask: (id: number, isDone: boolean) => Promise<void>;
   deleteTask: (id: number) => Promise<void>;
 }
@@ -24,18 +25,18 @@ const TasksContext = createContext<TasksContextType | undefined>(undefined);
 
 export function TasksProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [createdAt, setCreatedAt] = useState<string>('');
+  const [taskAt, setTaskAt] = useState<string>('');
 
-  const fetchTasks = async (opts?: { createdAt?: string}) => {
+  const fetchTasks = async (opts?: { taskAt?: string}) => {
     try {
       const params = new URLSearchParams();
-      if (opts?.createdAt) params.set('created_at', opts.createdAt);
+      if (opts?.taskAt) params.set('task_at', opts.taskAt);
       const url = '/api/task' + (params.toString() ? `?${params.toString()}` : '');
       const res = await fetch(url);
       if (!res.ok) return;
       const data = await res.json();
       setTasks(data.data || []);
-      setCreatedAt(data.created_at);
+      setTaskAt(data.task_at);
     } catch (err) {
       console.error('Failed to fetch tasks', err);
     }
@@ -81,7 +82,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <TasksContext.Provider value={{ tasks, addTask, refresh: fetchTasks, toggleTask, deleteTask, createdAt }}>
+    <TasksContext.Provider value={{ tasks, addTask, refresh: fetchTasks, toggleTask, deleteTask, taskAt }}>
       {children}
     </TasksContext.Provider>
   );

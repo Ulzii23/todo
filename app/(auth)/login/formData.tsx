@@ -17,10 +17,10 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useRouter } from 'next/navigation'
-import { useUser } from '@/lib/userContext'
+import { useUser } from '@/lib/context/user-provider'
 
 const formSchema = z.object({
-    name: z.string().min(2, {
+    username: z.string().min(2, {
         message: "Username must be at least 2 characters.",
     }),
     password: z.string().min(4, {
@@ -35,7 +35,7 @@ const FormData = () => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: "",
+            username: "",
             password: "",
         },
     })
@@ -58,10 +58,10 @@ const FormData = () => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <FormField
                     control={form.control}
-                    name="name"
+                    name="username"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Name</FormLabel>
+                            <FormLabel>username</FormLabel>
                             <FormControl>
                                 <Input placeholder="shadcn" {...field} />
                             </FormControl>

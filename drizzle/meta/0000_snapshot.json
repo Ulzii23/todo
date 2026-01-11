@@ -1,5 +1,5 @@
 {
-  "id": "e2bfe26a-30b9-4331-844d-1d8144962ce8",
+  "id": "5200aca1-9f15-4c27-ad7b-22b37b6db752",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -31,8 +31,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "name": {
-          "name": "name",
+        "title": {
+          "name": "title",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
@@ -43,6 +43,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
+        },
+        "task_date": {
+          "name": "task_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -102,8 +108,8 @@
             "cycle": false
           }
         },
-        "name": {
-          "name": "name",
+        "username": {
+          "name": "username",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true

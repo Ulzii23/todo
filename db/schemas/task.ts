@@ -1,4 +1,4 @@
-import { pgTable, integer, varchar, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, integer, varchar, boolean, timestamp, date } from "drizzle-orm/pg-core";
 import { user } from "./user";
 
 export const task = pgTable("tasks", {
@@ -10,9 +10,11 @@ export const task = pgTable("tasks", {
       onDelete: "cascade",
     }),
 
-    name: varchar({ length: 255 }).notNull(),
+    title: varchar({ length: 255 }).notNull(),
 
     isDone: boolean().default(false).notNull(),
+
+    task_at: date("task_at").notNull(),
 
     createdAt: timestamp("created_at", { withTimezone: true })
         .defaultNow()

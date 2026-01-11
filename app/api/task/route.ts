@@ -21,34 +21,28 @@ export async function GET(request: Request) {
   }
 
   const url = new URL(request.url);
-  let created_at = url.searchParams.get('created_at');
-  if (!created_at) {
-    created_at = new Date().toISOString().split('T')[0];
+  let task_at = url.searchParams.get('task_at');
+  if (!task_at) {
+    task_at = new Date().toISOString().split('T')[0];
   }
 
   const conditions = [eq(task.userId, user.id)];
 
-  if (created_at) {
-  const start = moment
-    .tz(created_at, 'YYYY-MM-DD', 'Asia/Ulaanbaatar')
+  if (task_at) {
+  const find_date = moment
+    .tz(task_at, 'YYYY-MM-DD', 'Asia/Ulaanbaatar')
     .startOf('day')
-    .toDate();
-
-  const end = moment
-    .tz(created_at, 'YYYY-MM-DD', 'Asia/Ulaanbaatar')
-    .endOf('day')
-    .toDate();
+    .format('YYYY-MM-DD');
 
   conditions.push(
-    gte(task.createdAt, start),
-    lte(task.createdAt, end)
+    eq(task.task_at, find_date)
   );
 }
   const builder = db.select().from(task).where(and(...conditions));
 
   const data = await builder;
 
-  return NextResponse.json({ data, created_at });
+  return NextResponse.json({ data, task_at });
 }
 
 
@@ -67,14 +61,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Invalid user cookie' }, { status: 400 });
   }
 
-  const { name } = await request.json();
-  if (!name || typeof name !== 'string') {
-    return NextResponse.json({ message: 'Invalid name' }, { status: 400 });
+  const { title, task_at } = await request.json();
+  if (!title || typeof title !== 'string') {
+    return NextResponse.json({ message: 'Invalid title' }, { status: 400 });
   }
 
   const newTask = await db
     .insert(task)
-    .values({ name, userId: user.id })
+    .values({ title:title, userId: user.id, task_at: task_at })
     .returning();
 
   return NextResponse.json(newTask[0]);

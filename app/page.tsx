@@ -2,10 +2,10 @@
 
 import FormData from "./_create/formData";
 import TaskList from "@/components/TaskList";
-import { useUser } from "@/lib/userContext";
+import { useUser } from "@/lib/context/user-provider";
 
 const Page = () => {
-  const { user, loading, logout } = useUser();
+  const { user, loading } = useUser();
 
   if (loading) {
     return <div>Loading...</div>;
@@ -16,16 +16,7 @@ const Page = () => {
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Welcome, {user.name}!</h1>
-        <button
-          onClick={logout}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-        >
-          Logout
-        </button>
-      </div>
+    <div className="mt-2">
       <FormData />
       <TaskList />
     </div>

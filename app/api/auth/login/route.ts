@@ -6,12 +6,12 @@ import { NextResponse } from "next/server";
 import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
-  const { name, password } = await request.json();
+  const { username, password } = await request.json();
 
   const [userRecord] = await db
     .select()
     .from(user)
-    .where(eq(user.name, name))
+    .where(eq(user.username, username))
     .limit(1);
 
   if (!userRecord) {
