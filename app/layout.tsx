@@ -20,12 +20,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${font.className} antialiased`}
+        className={`${font.className} antialiased bg-slate-50 min-h-screen`}
       >
         <UserProvider>
           <TasksProvider>
             <Header />
-            <main className="container mx-auto p-2 bg-slate-50 min-h-screen">
+            <main className="container mx-auto p-2">
               {children}
             </main>
           </TasksProvider>
