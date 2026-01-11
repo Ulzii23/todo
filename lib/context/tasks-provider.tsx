@@ -89,7 +89,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       });
       if (!res.ok) return;
       const updated = await res.json();
-      toast.success(`${task?.title} - updated`);
+      toast.success(`${task?.title}`);
       setTasks(prev => prev.map(t => (t.id === id ? { ...t, complete: updated.complete, updatedAt: updated.updatedAt } : t)));
     } catch (err) {
       console.error('Failed to toggle task', err);

@@ -6,7 +6,7 @@ import {
   ButtonGroup,
 } from "@/components/ui/button-group"
 import { Button } from "@/components/ui/button"
-import { ArrowRightIcon, ArrowLeftIcon, CircleXIcon } from "lucide-react"
+import { ArrowRightIcon, ArrowLeftIcon, CircleXIcon, CalendarIcon } from "lucide-react"
 import moment from 'moment';
 import Dashboard from '@/app/_tasks/dashboard'
 
@@ -39,7 +39,7 @@ export default function TaskList() {
         <Button variant="outline" className='flex-1' aria-label="Previous" onClick={()=>applyFilter("prev")}>
           <ArrowLeftIcon />
         </Button>
-        <Button variant="outline" className='flex-2'>{taskAt ? new Date(taskAt).toLocaleDateString() : ''}</Button>
+        <Button variant="outline" className='flex-2'><CalendarIcon /> {taskAt ? new Date(taskAt).toLocaleDateString() : ''}</Button>
         <Button variant="outline" aria-label="Next" className='flex-1' onClick={()=>applyFilter("next")}>
           <ArrowRightIcon />
         </Button>
