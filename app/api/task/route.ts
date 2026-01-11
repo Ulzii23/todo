@@ -3,7 +3,7 @@ import { task } from "@/db/schema";
 import { cookies } from 'next/headers';
 import { eq, and, gte, lte } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 export async function GET(request: Request) {
   const cookieStore = await cookies();
@@ -29,19 +29,21 @@ export async function GET(request: Request) {
   const conditions = [eq(task.userId, user.id)];
 
   if (created_at) {
-    const start = moment(created_at, 'YYYY-MM-DD')
-      .startOf('day')
-      .toDate();
+  const start = moment
+    .tz(created_at, 'YYYY-MM-DD', 'Asia/Ulaanbaatar')
+    .startOf('day')
+    .toDate();
 
-    const end = moment(created_at, 'YYYY-MM-DD')
-      .endOf('day')
-      .toDate();
+  const end = moment
+    .tz(created_at, 'YYYY-MM-DD', 'Asia/Ulaanbaatar')
+    .endOf('day')
+    .toDate();
 
-    conditions.push(
-      gte(task.createdAt, start),
-      lte(task.createdAt, end)
-    );
-  }
+  conditions.push(
+    gte(task.createdAt, start),
+    lte(task.createdAt, end)
+  );
+}
   const builder = db.select().from(task).where(and(...conditions));
 
   const data = await builder;
