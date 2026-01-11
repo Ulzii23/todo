@@ -34,13 +34,13 @@ export default function TaskList() {
   });
     
   return (
-    <div className="space-y-2 mt-6">
+    <div className="space-y-2">
       <ButtonGroup className='w-full'>
-        <Button variant="outline" size="lg" className='flex-1' aria-label="Previous" onClick={()=>applyFilter("prev")}>
+        <Button variant="outline" className='flex-1' aria-label="Previous" onClick={()=>applyFilter("prev")}>
           <ArrowLeftIcon />
         </Button>
-        <Button variant="outline" size="lg" className='flex-2'>{taskAt ? new Date(taskAt).toLocaleDateString() : ''}</Button>
-        <Button variant="outline" size="lg" aria-label="Next" className='flex-1' onClick={()=>applyFilter("next")}>
+        <Button variant="outline" className='flex-2'>{taskAt ? new Date(taskAt).toLocaleDateString() : ''}</Button>
+        <Button variant="outline" aria-label="Next" className='flex-1' onClick={()=>applyFilter("next")}>
           <ArrowRightIcon />
         </Button>
       </ButtonGroup>
@@ -49,7 +49,7 @@ export default function TaskList() {
         <p className="text-muted-foreground">No tasks yet.</p>
       ) : (
         sortedTasks.map(task => (
-          <div key={task.id} className="py-1 px-2 border rounded">
+          <div key={task.id} className="py-1 px-2 border rounded bg-white">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <input type="checkbox" checked={task.complete} onChange={() => toggleTask(task.id, !task.complete)} disabled={loading} />

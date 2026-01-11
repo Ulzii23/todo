@@ -24,7 +24,7 @@ const formSchema = z.object({
 })
 
 
-const FormData = () => {
+const AddForm = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { title: '' },
@@ -34,27 +34,13 @@ const FormData = () => {
   const { addTask, taskAt, loading } = useTasks();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      const res = await fetch('/api/task', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: values.title, task_at: taskAt }),
-      });
-
-      if (res.ok) {
-        const created = await res.json();
-        form.reset();
-        if (addTask) addTask(created);
-      } else {
-        console.error('Failed to create task');
-      }
-    } catch (err) {
-      console.error(err);
-    }
+    addTask({ title: values.title, task_at: taskAt }).then(() => {
+      form.reset();
+    });
   }
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         <FormField
           control={form.control}
           name="title"
@@ -64,7 +50,7 @@ const FormData = () => {
                 <div className="relative">
                   <Input
                     placeholder="Add task"
-                    className="pr-24" // space for button
+                    className="pr-24 bg-white" // space for button
                     {...field}
                     disabled={loading}
                   />
@@ -90,4 +76,4 @@ const FormData = () => {
   );
 }
 
-export default FormData;
+export default AddForm;

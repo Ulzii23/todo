@@ -16,7 +16,7 @@ interface Task {
 interface TasksContextType {
   tasks: Task[];
   taskAt: string;
-  addTask: (task: Task) => void;
+  addTask: (opts: {title:string, task_at: string}) =>  Promise<Task>;
   refresh: (opts?: { taskAt?: string }) => Promise<void>;
   toggleTask: (id: number, isDone: boolean) => Promise<void>;
   deleteTask: (id: number) => Promise<void>;
@@ -58,8 +58,23 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
-  const addTask = (task: Task) => {
-    setTasks(prev => [task, ...prev]);
+  const addTask = async (opts: {title:string, task_at: string}) => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/task', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: opts.title, task_at: opts.task_at }),
+      });
+      if (!res.ok) return;
+      const created = await res.json();
+      setTasks(prev => [created, ...prev]);
+      return created;
+    } catch (err) {
+      console.error('Failed to create task', err);
+    } finally{
+      setLoading(false);
+    }
   };
 
   const toggleTask = async (id: number, complete: boolean) => {
@@ -81,6 +96,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteTask = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this task?')) return;
     try {
       setLoading(true);
       const res = await fetch(`/api/task/${id}`, { method: 'DELETE' });

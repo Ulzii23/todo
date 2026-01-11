@@ -1,17 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "@/lib/context/user-provider";
 import { TasksProvider } from "@/lib/context/tasks-provider";
 import Header from "@/components/Header";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
+const font = Manrope({ subsets: ['cyrillic-ext'], preload: true, display: 'swap' });
 
 export const metadata: Metadata = {
-  title: "Todo App",
+  title: "MaDesires Todo",
   description: "For MaDesires",
 };
 
@@ -23,12 +20,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} antialiased`}
+        className={`${font.className} antialiased`}
       >
         <UserProvider>
           <TasksProvider>
             <Header />
-            <main className="container mx-auto p-2">
+            <main className="container mx-auto p-2 bg-slate-50 min-h-screen">
               {children}
             </main>
           </TasksProvider>

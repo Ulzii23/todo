@@ -1,24 +1,27 @@
 import { useTasks } from "@/lib/context/tasks-provider";
 
-const Dashboard = () => {
-const { tasks, loading } = useTasks();
-const successRate = tasks ? (tasks.filter(task => task.complete).length / tasks.length) * 100 : 0;
-if(loading){
-    return <p>Loading...</p>
+const percentColor = (percent: number) => {
+    if (percent >= 75) return 'text-green-600';
+    if (percent >= 50) return 'text-yellow-600';
+    return 'text-red-600';
 }
+const Dashboard = () => {
+    const { tasks, loading } = useTasks();
+    const successRate = tasks ? (tasks.filter(task => task.complete).length / tasks.length) * 100 : 0;
+    if (loading) {
+        return <p>Loading...</p>
+    }
+
     return (
-        <div>
-  <div className="flex gap-2 justify-between">
-                <p>Total Tasks: {tasks.length}</p>
-                {
-                    tasks.length > 0 && <p>Success Rate: <span className="font-medium">
-                                {successRate.toFixed(2)}%
-                                </span></p>
-                }
-                            
-                </div>
+        <div className="flex gap-2 justify-between text-xs">
+            <p>Total Tasks: <span className="font-medium">{tasks.length}</span></p>
+            {
+                tasks.length > 0 && <p>Success Rate: <span className={`font-medium ${percentColor(successRate)}`}>
+                    {successRate.toFixed(2)}%
+                </span></p>
+            }
+
         </div>
-      
     );
 }
 
