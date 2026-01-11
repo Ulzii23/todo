@@ -16,6 +16,8 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { useRouter } from 'next/navigation'
+import { useUser } from '@/lib/context/user-provider'
 
 const formSchema = z.object({
     username: z.string().min(2, {
@@ -31,6 +33,8 @@ const formSchema = z.object({
 
 
 const FormData = () => {
+    const router = useRouter()
+    const { setUser } = useUser();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -46,7 +50,10 @@ const FormData = () => {
             body: JSON.stringify(values)
         });
         const data = await response.json();
-        console.log(data);
+        if (response.ok) {
+           setUser?.(data.user);
+           router.push('/')
+        }
     }
     return (
         <Form {...form}>
@@ -56,9 +63,9 @@ const FormData = () => {
                     name="username"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>name</FormLabel>
+                            <FormLabel>Username</FormLabel>
                             <FormControl>
-                                <Input placeholder="shadcn" {...field} />
+                                <Input placeholder="" {...field} className="bg-white"/>
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -71,7 +78,7 @@ const FormData = () => {
                         <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
-                                <Input placeholder="shadcn" {...field} />
+                                <Input placeholder="" {...field} className="bg-white"/>
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -84,13 +91,13 @@ const FormData = () => {
                         <FormItem>
                             <FormLabel>Password</FormLabel>
                             <FormControl>
-                                <Input type="password" {...field} />
+                                <Input type="password" {...field} className="bg-white"/>
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-                <Button type="submit">Submit</Button>
+                <Button type="submit">Register</Button>
             </form>
         </Form>
     );

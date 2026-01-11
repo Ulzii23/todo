@@ -61,9 +61,9 @@ const FormData = () => {
                     name="username"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>username</FormLabel>
+                            <FormLabel>Username</FormLabel>
                             <FormControl>
-                                <Input placeholder="shadcn" {...field} />
+                                <Input placeholder="" {...field} className="bg-white"/>
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -76,13 +76,13 @@ const FormData = () => {
                         <FormItem>
                             <FormLabel>Password</FormLabel>
                             <FormControl>
-                                <Input type="password" {...field} />
+                                <Input type="password" {...field} className="bg-white"/>
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-                <Button type="submit">Submit</Button>
+                <Button type="submit">Login</Button>
             </form>
         </Form>
     );

@@ -8,7 +8,7 @@ import Header from "@/components/Header";
 const font = Manrope({ subsets: ['cyrillic-ext'], preload: true, display: 'swap' });
 
 export const metadata: Metadata = {
-  title: "MaDesires Todo",
+  title: "MaDesire",
   description: "For MaDesires",
 };
 
