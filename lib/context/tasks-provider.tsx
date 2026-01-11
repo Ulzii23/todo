@@ -1,8 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useUser } from '@/lib/context/user-provider';
-import { set } from 'zod';
+import { toast } from "sonner"
 
 interface Task {
   id: number;
@@ -69,6 +69,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       if (!res.ok) return;
       const created = await res.json();
       setTasks(prev => [created, ...prev]);
+      toast.success(`${created?.title} - created`);
       return created;
     } catch (err) {
       console.error('Failed to create task', err);
@@ -78,6 +79,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   };
 
   const toggleTask = async (id: number, complete: boolean) => {
+    const task = tasks.find(t => t.id == id);
     try {
       setLoading(true);
       const res = await fetch(`/api/task/${id}`, {
@@ -87,6 +89,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       });
       if (!res.ok) return;
       const updated = await res.json();
+      toast.success(`${task?.title} - updated`);
       setTasks(prev => prev.map(t => (t.id === id ? { ...t, complete: updated.complete, updatedAt: updated.updatedAt } : t)));
     } catch (err) {
       console.error('Failed to toggle task', err);
@@ -102,6 +105,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       const res = await fetch(`/api/task/${id}`, { method: 'DELETE' });
       if (!res.ok) return;
       setTasks(prev => prev.filter(t => t.id !== id));
+    toast.success(`Task deleted`);
     } catch (err) {
       console.error('Failed to delete task', err);
     }finally {

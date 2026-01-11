@@ -4,6 +4,7 @@ import "./globals.css";
 import { UserProvider } from "@/lib/context/user-provider";
 import { TasksProvider } from "@/lib/context/tasks-provider";
 import Header from "@/components/Header";
+import { Toaster } from "@/components/ui/sonner"
 
 const font = Manrope({ subsets: ['cyrillic-ext'], preload: true, display: 'swap' });
 
@@ -30,6 +31,7 @@ export default function RootLayout({
             </main>
           </TasksProvider>
         </UserProvider>
+        <Toaster />
       </body>
     </html>
   );
