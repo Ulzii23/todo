@@ -9,7 +9,7 @@ const Dashboard = () => {
     const { tasks, loading } = useTasks();
     const successRate = tasks ? (tasks.filter(task => task.complete).length / tasks.length) * 100 : 0;
     if (loading) {
-        return <p>Loading...</p>
+        return <p className="text-xs">Loading...</p>
     }
 
     return (
