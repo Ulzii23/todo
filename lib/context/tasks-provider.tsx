@@ -16,10 +16,11 @@ interface Task {
 interface TasksContextType {
   tasks: Task[];
   taskAt: string;
-  addTask: (opts: {title:string, task_at: string}) =>  Promise<Task>;
+  addTask: (opts: { title: string, task_at: string }) => Promise<Task>;
   refresh: (opts?: { taskAt?: string }) => Promise<void>;
   toggleTask: (id: number, isDone: boolean) => Promise<void>;
   deleteTask: (id: number) => Promise<void>;
+  updateTask: (id: number, updates: Partial<Task>) => Promise<void>;
   loading: boolean;
 }
 
@@ -30,7 +31,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   const [taskAt, setTaskAt] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
-  const fetchTasks = async (opts?: { taskAt?: string}) => {
+  const fetchTasks = async (opts?: { taskAt?: string }) => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -58,7 +59,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
-  const addTask = async (opts: {title:string, task_at: string}) => {
+  const addTask = async (opts: { title: string, task_at: string }) => {
     try {
       setLoading(true);
       const res = await fetch('/api/task', {
@@ -73,7 +74,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       return created;
     } catch (err) {
       console.error('Failed to create task', err);
-    } finally{
+    } finally {
       setLoading(false);
     }
   };
@@ -105,16 +106,49 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       const res = await fetch(`/api/task/${id}`, { method: 'DELETE' });
       if (!res.ok) return;
       setTasks(prev => prev.filter(t => t.id !== id));
-    toast.success(`Task deleted`);
+      toast.success(`Task deleted`);
     } catch (err) {
       console.error('Failed to delete task', err);
-    }finally {
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateTask = async (id: number, updates: Partial<Task>) => {
+    const originalTask = tasks.find(t => t.id === id);
+    try {
+      setLoading(true);
+      // Optimistic update
+      setTasks(prev => prev.map(t => (t.id === id ? { ...t, ...updates } : t)));
+
+      const res = await fetch(`/api/task/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to update');
+      }
+
+      const updated = await res.json();
+      // Update with server response to be sure
+      setTasks(prev => prev.map(t => (t.id === id ? { ...t, ...updated } : t)));
+      toast.success(`Task updated`);
+    } catch (err) {
+      console.error('Failed to update task', err);
+      // Revert on failure
+      if (originalTask) {
+        setTasks(prev => prev.map(t => (t.id === id ? originalTask : t)));
+      }
+      toast.error("Failed to update task");
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <TasksContext.Provider value={{ tasks, addTask, refresh: fetchTasks, toggleTask, deleteTask, taskAt, loading }}>
+    <TasksContext.Provider value={{ tasks, addTask, refresh: fetchTasks, toggleTask, deleteTask, updateTask, taskAt, loading }}>
       {children}
     </TasksContext.Provider>
   );

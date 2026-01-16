@@ -1,20 +1,30 @@
 "use client"
 
 import { useTasks } from '@/lib/context/tasks-provider'
+import { useState } from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 import {
   ButtonGroup,
 } from "@/components/ui/button-group"
 import { Button } from "@/components/ui/button"
-import { ArrowRightIcon, ArrowLeftIcon, CalendarIcon } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { ArrowRightIcon, ArrowLeftIcon, CalendarIcon, PencilIcon, CheckIcon, XIcon } from "lucide-react"
 import moment from 'moment';
 import Dashboard from '@/app/_tasks/dashboard'
+import CalendarDashboard from '@/app/_tasks/calendar-dashboard';
 import { motion } from "motion/react"
 import { cn } from '@/lib/utils'
 
 
 export default function TaskList() {
-  const { tasks, refresh, toggleTask, deleteTask, taskAt, loading } = useTasks();
+  const { tasks, refresh, toggleTask, deleteTask, updateTask, taskAt, loading } = useTasks();
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState('');
 
   const applyFilter = async (opt: string) => {
     let fDate = moment(taskAt);
@@ -36,14 +46,50 @@ export default function TaskList() {
     return a.complete ? 1 : -1;
   });
 
+  const startEditing = (task: any) => {
+    setEditingId(task.id);
+    setEditTitle(task.title);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditTitle('');
+  };
+
+  const saveEditing = async (id: number) => {
+    if (!editTitle.trim()) return;
+    await updateTask(id, { title: editTitle });
+    setEditingId(null);
+    setEditTitle('');
+  };
+
+  const isEditable = (taskDate: string) => {
+    return moment(taskDate).isSameOrAfter(moment(), 'day');
+  };
+
+  const [open, setOpen] = useState(false);
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
+
       <ButtonGroup className='w-full'>
-        <Button variant="outline" className='flex-1' aria-label="Previous" onClick={() => applyFilter("prev")}>
+        <Button variant="outline" className='flex-1 h-12' aria-label="Previous" onClick={() => applyFilter("prev")}>
           <ArrowLeftIcon />
         </Button>
-        <Button variant="outline" className='flex-2'><CalendarIcon /> {taskAt ? new Date(taskAt).toLocaleDateString() : ''}</Button>
-        <Button variant="outline" aria-label="Next" className='flex-1' onClick={() => applyFilter("next")}>
+
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className='flex-[2] h-12 font-semibold text-lg hover:bg-gray-50 transition-colors'>
+              <CalendarIcon className="mr-2 h-5 w-5" />
+              {taskAt ? moment(taskAt).format('MMM D, YYYY') : 'Today'}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <CalendarDashboard onDateSelect={() => setOpen(false)} />
+          </DialogContent>
+        </Dialog>
+
+        <Button variant="outline" className='flex-1 h-12' aria-label="Next" onClick={() => applyFilter("next")}>
           <ArrowRightIcon />
         </Button>
       </ButtonGroup>
@@ -61,11 +107,14 @@ export default function TaskList() {
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.2}
                 onDragEnd={(_, info) => {
+                  // Disable swipe actions if editing
+                  if (editingId === task.id) return;
+
                   if (info.offset.x < -100) {
                     // swipe left
-                     if(!task.complete){
+                    if (!task.complete) {
                       deleteTask(task.id);
-                    }else {
+                    } else {
                       toggleTask(task.id, false)
                     }
                   } else if (info.offset.x > 100) {
@@ -74,14 +123,41 @@ export default function TaskList() {
                   }
                 }}
                 className={cn("relative touch-pan-y bg-white rounded shadow p-3", task.complete && 'opacity-90')}
-                initial={{scale: 0}}
+                initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
               >
-              <div className='flex items-center justify-between gap-2'>
-                  <div className={`font-medium ${task.complete ? 'line-through text-gray-500' : ''}`}>{task.title}</div>
-                  { task.complete && <span className="text-xs text-gray-500 block">{moment(task.updatedAt).format('HH:mm')}</span>}
+                <div className='flex items-center justify-between gap-2'>
+                  {editingId === task.id ? (
+                    <div className="flex w-full gap-2 items-center">
+                      <Input
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveEditing(task.id);
+                          if (e.key === 'Escape') cancelEditing();
+                        }}
+                      />
+                      <Button size="icon" variant="ghost" onClick={() => saveEditing(task.id)}><CheckIcon className="w-4 h-4 text-green-600" /></Button>
+                      <Button size="icon" variant="ghost" onClick={cancelEditing}><XIcon className="w-4 h-4 text-red-600" /></Button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className={`font-medium flex-1 ${task.complete ? 'line-through text-gray-500' : ''}`} onClick={() => !task.complete && isEditable(task.task_at) && startEditing(task)}>
+                        {task.title}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {task.complete && <span className="text-xs text-gray-500 block">{moment(task.updatedAt).format('HH:mm')}</span>}
+                        {!task.complete && isEditable(task.task_at) && (
+                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => startEditing(task)}>
+                            <PencilIcon className="h-3 w-3 text-gray-400" />
+                          </Button>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
-                {!task.complete && <Shimmer/>}
+                {!task.complete && editingId !== task.id && <Shimmer />}
               </motion.div>
             </li>
           ))
