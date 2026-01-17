@@ -14,6 +14,7 @@ interface UserContextType {
   setUser: (user: User | null) => void;
   loading: boolean;
   logout: () => void;
+  login: (token: string, user: User) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -23,30 +24,49 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  const login = (token: string, userData: User) => {
+    localStorage.setItem('token', token);
+    setUser(userData);
+    router.push('/');
+  };
+
   const logout = () => {
-    // call server to clear httpOnly cookie
-    fetch('/api/auth/logout', { method: 'POST' })
-      .finally(() => {
-        setUser(null);
-        router.push('/login');
-      });
+    localStorage.removeItem('token');
+    setUser(null);
+    router.push('/login');
   };
 
   useEffect(() => {
     const checkUser = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        const currentPath = window.location.pathname;
+        if (!currentPath.startsWith('/login') && !currentPath.startsWith('/register')) {
+          router.push('/login');
+        }
+        setLoading(false);
+        return;
+      }
+
       try {
-        const res = await fetch('/api/auth/me');
+        const res = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         if (!res.ok) throw new Error('Network error');
         const data = await res.json();
         if (data?.user) {
           setUser(data.user);
         } else {
+          localStorage.removeItem('token');
           const currentPath = window.location.pathname;
           if (!currentPath.startsWith('/login') && !currentPath.startsWith('/register')) {
             router.push('/login');
           }
         }
       } catch (err) {
+        localStorage.removeItem('token');
         const currentPath = window.location.pathname;
         if (!currentPath.startsWith('/login') && !currentPath.startsWith('/register')) {
           router.push('/login');
@@ -60,7 +80,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, [router]);
 
   return (
-    <UserContext.Provider value={{ user, setUser, loading, logout }}>
+    <UserContext.Provider value={{ user, setUser, loading, logout, login }}>
       {children}
     </UserContext.Provider>
   );

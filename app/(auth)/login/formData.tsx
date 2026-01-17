@@ -30,8 +30,8 @@ const formSchema = z.object({
 
 
 const FormData = () => {
-      const router = useRouter()
-    const { setUser } = useUser();
+    const router = useRouter()
+    const { login } = useUser();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -49,8 +49,7 @@ const FormData = () => {
         });
         const data = await response.json();
         if (response.ok) {
-           setUser?.(data.user);
-           router.push('/')
+            login(data.token, data.user);
         }
     }
     return (
@@ -63,7 +62,7 @@ const FormData = () => {
                         <FormItem>
                             <FormLabel>Username</FormLabel>
                             <FormControl>
-                                <Input placeholder="" {...field} className="bg-white"/>
+                                <Input placeholder="" {...field} className="bg-white" />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -76,7 +75,7 @@ const FormData = () => {
                         <FormItem>
                             <FormLabel>Password</FormLabel>
                             <FormControl>
-                                <Input type="password" {...field} className="bg-white"/>
+                                <Input type="password" {...field} className="bg-white" />
                             </FormControl>
                             <FormMessage />
                         </FormItem>

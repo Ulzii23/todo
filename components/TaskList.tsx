@@ -13,11 +13,11 @@ import {
 } from "@/components/ui/button-group"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowRightIcon, ArrowLeftIcon, CalendarIcon, PencilIcon, CheckIcon, XIcon } from "lucide-react"
+import { ArrowRightIcon, ArrowLeftIcon, CalendarIcon, PencilIcon, CheckIcon, XIcon, RotateCcw } from "lucide-react"
 import moment from 'moment';
 import Dashboard from '@/app/_tasks/dashboard'
 import CalendarDashboard from '@/app/_tasks/calendar-dashboard';
-import { motion } from "motion/react"
+import { motion, useMotionValue, useTransform } from "motion/react"
 import { cn } from '@/lib/utils'
 
 
@@ -99,75 +99,166 @@ export default function TaskList() {
         {tasks.length === 0 ? (
           <li className="text-muted-foreground">No tasks yet.</li>
         ) : (
-          sortedTasks.map((task, index) => (
-            <li key={index} className="relative overflow-hidden">
-              <motion.div
-                drag="x"
-                dragDirectionLock
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={0.2}
-                onDragEnd={(_, info) => {
-                  // Disable swipe actions if editing
-                  if (editingId === task.id) return;
-
-                  if (info.offset.x < -100) {
-                    // swipe left
-                    if (!task.complete) {
-                      deleteTask(task.id);
-                    } else {
-                      toggleTask(task.id, false)
-                    }
-                  } else if (info.offset.x > 100) {
-                    // swipe right
-                    toggleTask(task.id, true)
-                  }
-                }}
-                className={cn("relative touch-pan-y bg-white rounded shadow p-3", task.complete && 'opacity-90')}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-              >
-                <div className='flex items-center justify-between gap-2'>
-                  {editingId === task.id ? (
-                    <div className="flex w-full gap-2 items-center">
-                      <Input
-                        value={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                        autoFocus
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') saveEditing(task.id);
-                          if (e.key === 'Escape') cancelEditing();
-                        }}
-                      />
-                      <Button size="icon" variant="ghost" onClick={() => saveEditing(task.id)}><CheckIcon className="w-4 h-4 text-green-600" /></Button>
-                      <Button size="icon" variant="ghost" onClick={cancelEditing}><XIcon className="w-4 h-4 text-red-600" /></Button>
-                    </div>
-                  ) : (
-                    <>
-                      <div className={`font-medium flex-1 ${task.complete ? 'line-through text-gray-500' : ''}`} onClick={() => !task.complete && isEditable(task.task_at) && startEditing(task)}>
-                        {task.title}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {task.complete && <span className="text-xs text-gray-500 block">{moment(task.updatedAt).format('HH:mm')}</span>}
-                        {!task.complete && isEditable(task.task_at) && (
-                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => startEditing(task)}>
-                            <PencilIcon className="h-3 w-3 text-gray-400" />
-                          </Button>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-                {!task.complete && editingId !== task.id && <Shimmer />}
-              </motion.div>
-            </li>
+          sortedTasks.map((task) => (
+            <TaskItem key={task.id} task={task} />
           ))
         )}
-
-
       </ul>
-
     </div>
   )
+}
+
+function TaskItem({ task }: { task: any }) {
+  const { toggleTask, deleteTask, updateTask, taskAt } = useTasks();
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+
+  // Motion values for swipe feedback
+  const x = useMotionValue(0);
+
+  // We used useTransform directly before, but we need conditional logic based on task.complete.
+  // However, useTransform hooks need to be consistent. 
+  // We will control the specific output range values based on state.
+
+  const background = useTransform(x, [-100, 100], ["none", "none"]);
+
+  const leftOpacity = useTransform(x, [10, 60], [0, 1]);
+  const rightOpacity = useTransform(x, [-10, -60], [0, 1]);
+
+  const bgColor = useTransform(
+    x,
+    [-150, -50, 0, 50, 150],
+    [
+      "rgba(239, 68, 68, 1)", // Red
+      "rgba(239, 68, 68, 1)",
+      "rgba(255, 255, 255, 0)", // Transparent Center
+      task.complete ? "rgba(34, 197, 94, 0)" : "rgba(34, 197, 94, 1)", // Green
+      task.complete ? "rgba(34, 197, 94, 0)" : "rgba(34, 197, 94, 1)"
+    ]
+  );
+
+  const startEditing = (task: any) => {
+    setEditingId(task.id);
+    setEditTitle(task.title);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditTitle('');
+  };
+
+  const saveEditing = async (id: number) => {
+    if (!editTitle.trim()) return;
+    await updateTask(id, { title: editTitle });
+    setEditingId(null);
+    setEditTitle('');
+  };
+
+  const isEditable = (taskDate: string) => {
+    return moment(taskDate).isSameOrAfter(moment(), 'day');
+  };
+
+  return (
+    <li className="relative overflow-hidden mb-2 rounded-xl shadow-sm border border-transparent hover:border-border/50 transition-all text-card-foreground">
+      {/* Dynamic Background Layout */}
+      <motion.div
+        className="absolute inset-0 flex items-center justify-between pointer-events-none z-0"
+        style={{ backgroundColor: bgColor }}
+      >
+        {/* Complete Indicator (Left) - Only if not complete */}
+        {!task.complete && (
+          <motion.div style={{ opacity: leftOpacity }} className="flex items-center gap-2 text-white font-medium pl-6">
+            <CheckIcon className="w-5 h-5" />
+            <span className="text-sm">Complete</span>
+          </motion.div>
+        )}
+
+        {/* Delete/Undo Indicator (Right) */}
+        <motion.div style={{ opacity: rightOpacity }} className="flex items-center gap-2 text-white font-medium pr-6 ml-auto">
+          {task.complete ? <span className="text-sm">Undo</span> : <span className="text-sm">Delete</span>}
+          {task.complete ? <RotateCcw className="w-5 h-5" /> : <XIcon className="w-5 h-5" />}
+        </motion.div>
+      </motion.div>
+
+      <motion.div
+        drag="x"
+        dragDirectionLock
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={{ left: 0.1, right: task.complete ? 0.01 : 0.1 }}
+        style={{ x }}
+        onDragEnd={(_, info) => {
+          if (editingId === task.id) return;
+
+          if (info.offset.x < -60) {
+            // swipe left (delete/undo)
+            if (!task.complete) {
+              deleteTask(task.id);
+            } else {
+              toggleTask(task.id, false)
+            }
+          } else if (info.offset.x > 60) {
+            // swipe right (complete)
+            if (!task.complete) {
+              toggleTask(task.id, true);
+            }
+          }
+        }}
+        className={cn(
+          "relative z-10 touch-pan-y p-3 transition-colors duration-300 group bg-card",
+          task.complete && 'bg-muted/40'
+        )}
+      >
+        <div className='flex items-center justify-between gap-2'>
+          {editingId === task.id ? (
+            <div className="flex w-full gap-2 items-center">
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') saveEditing(task.id);
+                  if (e.key === 'Escape') cancelEditing();
+                }}
+              />
+              <Button size="icon" variant="ghost" onClick={() => saveEditing(task.id)}><CheckIcon className="w-4 h-4 text-green-600" /></Button>
+              <Button size="icon" variant="ghost" onClick={cancelEditing}><XIcon className="w-4 h-4 text-red-600" /></Button>
+            </div>
+          ) : (
+            <>
+              <div
+                className={cn(
+                  "font-medium flex-1 transition-all duration-300",
+                  task.complete && "line-through text-muted-foreground decoration-green-500/50 decoration-2"
+                )}
+                onClick={() => !task.complete && isEditable(task.task_at) && startEditing(task)}
+              >
+                {task.title}
+              </div>
+              <div className="flex items-center gap-2">
+                {task.complete && (
+                  <motion.div
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="text-green-600"
+                  >
+                    <CheckIcon className="w-5 h-5" />
+                  </motion.div>
+                )}
+                {task.complete && <span className="text-xs text-muted-foreground block">{moment(task.updatedAt).format('HH:mm')}</span>}
+
+                {!task.complete && isEditable(task.task_at) && (
+                  <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => startEditing(task)}>
+                    <PencilIcon className="h-3 w-3 text-muted-foreground" />
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+        {!task.complete && editingId !== task.id && <Shimmer />}
+      </motion.div>
+    </li>
+  );
 }
 
 function Shimmer() {

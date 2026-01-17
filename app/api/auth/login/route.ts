@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { cookies } from 'next/headers';
+import { signToken } from '@/lib/auth';
 
 export async function POST(request: Request) {
   const { username, password } = await request.json();
@@ -30,19 +31,13 @@ export async function POST(request: Request) {
   // ❗ never return password hash
   const { password: _, ...safeUser } = userRecord;
 
-  // Set user cookie using NextResponse
-  const res = NextResponse.json({
+  // Generate JWT Token
+  const token = await signToken({ ...safeUser });
+
+  // Return token and user in response
+  return NextResponse.json({
     message: "Login successful",
     user: safeUser,
+    token
   });
-
-  res.cookies.set('user', JSON.stringify(safeUser), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  });
-
-  return res;
 }

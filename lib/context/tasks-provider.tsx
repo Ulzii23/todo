@@ -31,13 +31,23 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   const [taskAt, setTaskAt] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : ''
+    };
+  };
+
   const fetchTasks = async (opts?: { taskAt?: string }) => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
       if (opts?.taskAt) params.set('task_at', opts.taskAt);
       const url = '/api/task' + (params.toString() ? `?${params.toString()}` : '');
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        headers: getAuthHeaders()
+      });
       if (!res.ok) return;
       const data = await res.json();
       setTasks(data.data || []);
@@ -64,7 +74,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       const res = await fetch('/api/task', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ title: opts.title, task_at: opts.task_at }),
       });
       if (!res.ok) return;
@@ -85,7 +95,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       const res = await fetch(`/api/task/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ complete }),
       });
       if (!res.ok) return;
@@ -103,7 +113,10 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     if (!confirm('Are you sure you want to delete this task?')) return;
     try {
       setLoading(true);
-      const res = await fetch(`/api/task/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/task/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
       if (!res.ok) return;
       setTasks(prev => prev.filter(t => t.id !== id));
       toast.success(`Task deleted`);
@@ -123,7 +136,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
       const res = await fetch(`/api/task/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(updates),
       });
 

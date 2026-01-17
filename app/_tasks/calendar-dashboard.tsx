@@ -100,7 +100,12 @@ export default function CalendarDashboard({ onDateSelect }: { onDateSelect?: () 
                 ))}
             </div>
 
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-2 relative min-h-[200px]">
+                {loading && (
+                    <div className="absolute inset-0 bg-white/80 z-10 flex items-center justify-center backdrop-blur-sm rounded-xl">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    </div>
+                )}
                 {days.map((date, idx) => {
                     if (!date) return <div key={`empty-${idx}`} />;
 

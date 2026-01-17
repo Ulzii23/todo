@@ -1,20 +1,25 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { verifyToken } from '@/lib/auth';
+import { headers } from 'next/headers';
 import db from '@/db';
 import { task } from '@/db/schema';
 import { eq, and, sql, gte, lte } from 'drizzle-orm';
 
-export async function GET(request: Request) {
-  const cookieStore = await cookies();
-  const userCookie = cookieStore.get('user')?.value;
-  if (!userCookie) return NextResponse.json({ message: 'Not authenticated' }, { status: 401 });
+const getUserFromHeader = async () => {
+  const headersList = await headers();
+  const authHeader = headersList.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+  const token = authHeader.split(' ')[1];
+  return verifyToken(token);
+}
 
-  let user;
-  try { user = JSON.parse(userCookie); } catch { return NextResponse.json({ message: 'Invalid user' }, { status: 400 }); }
+export async function GET(request: Request) {
+  const user = await getUserFromHeader();
+  if (!user) return NextResponse.json({ message: 'Not authenticated' }, { status: 401 });
 
   const { searchParams } = new URL(request.url);
   const month = searchParams.get('month'); // YYYY-MM
-  
+
   if (!month) {
     return NextResponse.json({ message: 'Month is required' }, { status: 400 });
   }
@@ -31,7 +36,7 @@ export async function GET(request: Request) {
     .from(task)
     .where(
       and(
-        eq(task.userId, user.id),
+        eq(task.userId, user.id as number),
         gte(task.task_at, startDate.toISOString().split('T')[0]),
         lte(task.task_at, endDate.toISOString().split('T')[0])
       )
@@ -39,10 +44,10 @@ export async function GET(request: Request) {
 
   // Aggregate stats per day
   const stats: Record<string, { total: number; completed: number; rate: number }> = {};
-  
+
   tasks.forEach(t => {
-      // t.date is a string "YYYY-MM-DD" from db
-    const dateStr = t.date; 
+    // t.date is a string "YYYY-MM-DD" from db
+    const dateStr = t.date;
     if (!stats[dateStr]) {
       stats[dateStr] = { total: 0, completed: 0, rate: 0 };
     }
