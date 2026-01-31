@@ -12,6 +12,7 @@ import {
   ButtonGroup,
 } from "@/components/ui/button-group"
 import { Button } from "@/components/ui/button"
+import { ShinyButton } from "@/components/ui/shiny-button"
 import { Input } from "@/components/ui/input"
 import { ArrowRightIcon, ArrowLeftIcon, CalendarIcon, PencilIcon, CheckIcon, XIcon, RotateCcw } from "lucide-react"
 import moment from 'moment';
@@ -204,84 +205,109 @@ function TaskItem({ task }: { task: any }) {
           }
         }}
         className={cn(
-          "relative z-10 touch-pan-y p-4 transition-all duration-500 group bg-card hover:bg-card/90 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]",
-          task.complete && 'bg-muted/30 opacity-70'
+          "relative z-10 touch-pan-y transition-all duration-500 group bg-card",
+          task.complete && 'bg-muted/30 opacity-70 p-4'
         )}
       >
-        <div className='flex items-center justify-between gap-2'>
-          {editingId === task.id ? (
-            <div className="flex w-full gap-2 items-center">
-              <Input
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') saveEditing(task.id);
-                  if (e.key === 'Escape') cancelEditing();
-                }}
-              />
-              <Button size="icon" variant="ghost" onClick={() => saveEditing(task.id)}><CheckIcon className="w-4 h-4 text-green-600" /></Button>
-              <Button size="icon" variant="ghost" onClick={cancelEditing}><XIcon className="w-4 h-4 text-red-600" /></Button>
-            </div>
-          ) : (
-            <>
-              <div
-                className={cn(
-                  "font-medium flex-1 transition-all duration-300",
-                  task.complete && "line-through text-muted-foreground decoration-green-500/50 decoration-2"
-                )}
-                onClick={() => !task.complete && isEditable(task.task_at) && startEditing(task)}
-              >
-                {task.title}
-              </div>
-              <div className="flex items-center gap-2">
-                {task.complete && (
-                  <motion.div
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="text-green-600"
-                  >
-                    <CheckIcon className="w-5 h-5" />
-                  </motion.div>
-                )}
-                {task.complete && <span className="text-xs text-muted-foreground block">{moment(task.updatedAt).format('HH:mm')}</span>}
-
-                {!task.complete && isEditable(task.task_at) && (
-                  <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => startEditing(task)}>
-                    <PencilIcon className="h-3 w-3 text-muted-foreground" />
-                  </Button>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-        {editingId !== task.id && <Shimmer />}
+        {!task.complete ? (
+          <ShinyButton
+            className="w-full text-left bg-transparent border-none p-4 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all"
+            onClick={() => isEditable(task.task_at) && startEditing(task)}
+          >
+            <TaskContent
+              task={task}
+              editingId={editingId}
+              editTitle={editTitle}
+              setEditTitle={setEditTitle}
+              saveEditing={saveEditing}
+              cancelEditing={cancelEditing}
+              startEditing={startEditing}
+              isEditable={isEditable}
+            />
+          </ShinyButton>
+        ) : (
+          <TaskContent
+            task={task}
+            editingId={editingId}
+            editTitle={editTitle}
+            setEditTitle={setEditTitle}
+            saveEditing={saveEditing}
+            cancelEditing={cancelEditing}
+            startEditing={startEditing}
+            isEditable={isEditable}
+          />
+        )}
       </motion.div>
     </li>
   );
 }
 
-function Shimmer() {
+function TaskContent({
+  task,
+  editingId,
+  editTitle,
+  setEditTitle,
+  saveEditing,
+  cancelEditing,
+  startEditing,
+  isEditable
+}: any) {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-xl">
-      <motion.div
-        className="
-          absolute top-0 left-0 h-full
-          w-full
-          max-w-[50%]
-          bg-linear-to-r from-transparent via-white/60 to-transparent
-          -skew-x-25
-          blur-[2px]
-        "
-        initial={{ x: "-150%" }}
-        animate={{ x: "300%" }}
-        transition={{
-          duration: 1.5,
-          ease: "easeInOut",
-          repeat: Infinity,
-          repeatDelay: 0.5
-        }}
-      />
+    <div className='flex items-center justify-between gap-2 w-full'>
+      {editingId === task.id ? (
+        <div className="flex w-full gap-2 items-center" onClick={(e) => e.stopPropagation()}>
+          <Input
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') saveEditing(task.id);
+              if (e.key === 'Escape') cancelEditing();
+            }}
+          />
+          <Button size="icon" variant="ghost" onClick={() => saveEditing(task.id)}><CheckIcon className="w-4 h-4 text-green-600" /></Button>
+          <Button size="icon" variant="ghost" onClick={cancelEditing}><XIcon className="w-4 h-4 text-red-600" /></Button>
+        </div>
+      ) : (
+        <>
+          <div
+            className={cn(
+              "font-medium flex-1 transition-all duration-300 text-left",
+              task.complete && "line-through text-muted-foreground decoration-green-500/50 decoration-2"
+            )}
+          >
+            {task.title}
+          </div>
+          <div className="flex items-center gap-2">
+            {task.complete && (
+              <motion.div
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="text-green-600"
+              >
+                <CheckIcon className="w-5 h-5" />
+              </motion.div>
+            )}
+            {task.complete && <span className="text-xs text-muted-foreground block">{moment(task.updatedAt).format('HH:mm')}</span>}
+            {!task.complete && isEditable(task.task_at) && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  startEditing(task);
+                }}
+              >
+                <PencilIcon className="h-3 w-3 text-muted-foreground" />
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </div>
-  )
+  );
 }
+
+// Remove Shimmer component if not used elsewhere
+

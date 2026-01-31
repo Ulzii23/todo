@@ -32,9 +32,14 @@ const formSchema = z.object({
 })
 
 
+import { useState } from "react"
+import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
+
 const FormData = () => {
     const router = useRouter()
     const { setUser } = useUser();
+    const [isLoading, setIsLoading] = useState(false)
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -45,14 +50,25 @@ const FormData = () => {
 
     // 2. Define a submit handler.
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        const response = await fetch('/api/auth/register', {
-            method: 'POST',
-            body: JSON.stringify(values)
-        });
-        const data = await response.json();
-        if (response.ok) {
-           setUser?.(data.user);
-           router.push('/')
+        setIsLoading(true)
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(values)
+            });
+            const data = await response.json();
+            if (response.ok) {
+                toast.success("Registration successful!")
+                setUser?.(data.user);
+                router.push('/')
+            } else {
+                toast.error(data.message || "Registration failed")
+            }
+        } catch (error) {
+            toast.error("Something went wrong. Please try again.")
+        } finally {
+            setIsLoading(false)
         }
     }
     return (
@@ -65,20 +81,20 @@ const FormData = () => {
                         <FormItem>
                             <FormLabel>Username</FormLabel>
                             <FormControl>
-                                <Input placeholder="" {...field} className="bg-white"/>
+                                <Input placeholder="" {...field} className="bg-white" />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-                 <FormField
+                <FormField
                     control={form.control}
                     name="email"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
-                                <Input placeholder="" {...field} className="bg-white"/>
+                                <Input placeholder="" {...field} className="bg-white" />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -91,13 +107,16 @@ const FormData = () => {
                         <FormItem>
                             <FormLabel>Password</FormLabel>
                             <FormControl>
-                                <Input type="password" {...field} className="bg-white"/>
+                                <Input type="password" {...field} className="bg-white" />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-                <Button type="submit">Register</Button>
+                <Button type="submit" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Register
+                </Button>
             </form>
         </Form>
     );

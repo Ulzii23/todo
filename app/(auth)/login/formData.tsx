@@ -29,9 +29,15 @@ const formSchema = z.object({
 })
 
 
+import { useState } from "react"
+import { Loader2 } from "lucide-react"
+
+import { toast } from "sonner"
+
 const FormData = () => {
     const router = useRouter()
     const { login } = useUser();
+    const [isLoading, setIsLoading] = useState(false)
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -42,14 +48,24 @@ const FormData = () => {
 
     // 2. Define a submit handler.
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        const response = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(values)
-        });
-        const data = await response.json();
-        if (response.ok) {
-            login(data.token, data.user);
+        setIsLoading(true)
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(values)
+            });
+            const data = await response.json();
+            if (response.ok) {
+                toast.success("Login successful!")
+                login(data.token, data.user);
+            } else {
+                toast.error(data.message || "Invalid credentials")
+            }
+        } catch (error) {
+            toast.error("Something went wrong. Please try again.")
+        } finally {
+            setIsLoading(false)
         }
     }
     return (
@@ -81,7 +97,10 @@ const FormData = () => {
                         </FormItem>
                     )}
                 />
-                <Button type="submit">Login</Button>
+                <Button type="submit" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Login
+                </Button>
             </form>
         </Form>
     );
