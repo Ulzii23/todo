@@ -182,6 +182,38 @@
   /* More saturated rose */
 }
 
+.kiwi {
+  /* Kiwi / Fresh Green vibe */
+  --background: oklch(0.98 0.02 120);
+  --foreground: oklch(0.20 0.05 120);
+  --card: oklch(0.96 0.03 120);
+  --card-foreground: oklch(0.20 0.05 120);
+  --popover: oklch(0.96 0.03 120);
+  --popover-foreground: oklch(0.20 0.05 120);
+  --primary: oklch(0.75 0.18 135);
+  /* Vibrant Kiwi Green */
+  --primary-foreground: oklch(0.20 0.05 120);
+  --secondary: oklch(0.94 0.05 120);
+  --secondary-foreground: oklch(0.20 0.05 120);
+  --muted: oklch(0.92 0.04 120);
+  --muted-foreground: oklch(0.45 0.08 120);
+  --accent: oklch(0.92 0.06 120);
+  --accent-foreground: oklch(0.20 0.05 120);
+  --destructive: oklch(0.6 0.18 25);
+  --border: oklch(0.88 0.06 120);
+  --input: oklch(0.88 0.06 120);
+  --ring: oklch(0.75 0.18 135);
+  --sidebar: oklch(0.96 0.03 120);
+  --sidebar-foreground: oklch(0.20 0.05 120);
+  --sidebar-primary: oklch(0.75 0.18 135);
+  --sidebar-primary-foreground: oklch(0.20 0.05 120);
+  --sidebar-accent: oklch(0.94 0.05 120);
+  --sidebar-accent-foreground: oklch(0.20 0.05 120);
+  --sidebar-border: oklch(0.88 0.06 120);
+  --sidebar-ring: oklch(0.75 0.18 135);
+  --header-bg: oklch(0.94 0.05 120);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

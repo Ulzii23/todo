@@ -40,6 +40,10 @@ export function ThemeSwitcher() {
                     <div className="mr-2 h-4 w-4 rounded-full bg-[#ffe4e6] border border-gray-300" />
                     <span>Rose</span>
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("kiwi")}>
+                    <div className="mr-2 h-4 w-4 rounded-full bg-[#84cc16] border border-gray-300" />
+                    <span>Kiwi</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme("system")}>
                     <Monitor className="mr-2 h-4 w-4" />
                     <span>System</span>
