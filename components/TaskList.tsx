@@ -123,12 +123,12 @@ function TaskItem({ task }: { task: any }) {
 
   const background = useTransform(x, [-100, 100], ["none", "none"]);
 
-  const leftOpacity = useTransform(x, [10, 60], [0, 1]);
-  const rightOpacity = useTransform(x, [-10, -60], [0, 1]);
+  const leftOpacity = useTransform(x, [30, 120], [0, 1]);
+  const rightOpacity = useTransform(x, [-30, -120], [0, 1]);
 
   const bgColor = useTransform(
     x,
-    [-150, -50, 0, 50, 150],
+    [-250, -100, 0, 100, 250],
     [
       "rgba(239, 68, 68, 1)", // Red
       "rgba(239, 68, 68, 1)",
@@ -185,19 +185,19 @@ function TaskItem({ task }: { task: any }) {
         drag="x"
         dragDirectionLock
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={{ left: 0.1, right: task.complete ? 0.01 : 0.1 }}
+        dragElastic={{ left: 1, right: task.complete ? 0.3 : 1 }}
         style={{ x }}
         onDragEnd={(_, info) => {
           if (editingId === task.id) return;
 
-          if (info.offset.x < -60) {
+          if (info.offset.x < -150) {
             // swipe left (delete/undo)
             if (!task.complete) {
               deleteTask(task.id);
             } else {
               toggleTask(task.id, false)
             }
-          } else if (info.offset.x > 60) {
+          } else if (info.offset.x > 150) {
             // swipe right (complete)
             if (!task.complete) {
               toggleTask(task.id, true);
@@ -205,7 +205,7 @@ function TaskItem({ task }: { task: any }) {
           }
         }}
         className={cn(
-          "relative z-10 touch-pan-y transition-all duration-500 group bg-card",
+          "relative z-10 touch-pan-y group bg-card",
           task.complete && 'bg-muted/30 opacity-70 p-4'
         )}
       >
