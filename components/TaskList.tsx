@@ -79,7 +79,7 @@ export default function TaskList() {
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" className='flex-[2] h-12 font-semibold text-lg hover:bg-gray-50 transition-colors'>
+            <Button variant="outline" className='flex-[2] h-12 font-semibold text-lg hover:bg-gray-50 transition-colors relative overflow-hidden'>
               <CalendarIcon className="mr-2 h-5 w-5" />
               {taskAt ? moment(taskAt).format('MMM D, YYYY') : 'Today'}
             </Button>
@@ -204,8 +204,8 @@ function TaskItem({ task }: { task: any }) {
           }
         }}
         className={cn(
-          "relative z-10 touch-pan-y p-3 transition-colors duration-300 group bg-card",
-          task.complete && 'bg-muted/40'
+          "relative z-10 touch-pan-y p-4 transition-all duration-500 group bg-card hover:bg-card/90 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]",
+          task.complete && 'bg-muted/30 opacity-70'
         )}
       >
         <div className='flex items-center justify-between gap-2'>
@@ -255,7 +255,7 @@ function TaskItem({ task }: { task: any }) {
             </>
           )}
         </div>
-        {!task.complete && editingId !== task.id && <Shimmer />}
+        {editingId !== task.id && <Shimmer />}
       </motion.div>
     </li>
   );
@@ -263,21 +263,23 @@ function TaskItem({ task }: { task: any }) {
 
 function Shimmer() {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-xl">
       <motion.div
         className="
           absolute top-0 left-0 h-full
           w-full
-          max-w-[60%]       /* extend beyond parent width */
-          bg-gradient-to-r from-transparent via-green-200/50 to-transparent
-          -skew-x-12
+          max-w-[50%]
+          bg-linear-to-r from-transparent via-white/60 to-transparent
+          -skew-x-25
+          blur-[2px]
         "
-        initial={{ x: "-100%" }}
-        animate={{ x: "100%" }}
+        initial={{ x: "-150%" }}
+        animate={{ x: "300%" }}
         transition={{
           duration: 1.5,
-          ease: "linear",
+          ease: "easeInOut",
           repeat: Infinity,
+          repeatDelay: 0.5
         }}
       />
     </div>

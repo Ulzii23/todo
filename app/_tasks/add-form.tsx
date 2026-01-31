@@ -39,39 +39,42 @@ const AddForm = () => {
     });
   }
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <div className="relative">
-                  <Input
-                    placeholder="Add task"
-                    className="pr-24 bg-white" // space for button
-                    {...field}
-                    disabled={loading}
-                  />
+    <div className="mb-6">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <div className="relative group">
+                    <Input
+                      placeholder="What needs to be done?"
+                      className="h-14 pl-5 pr-16 bg-white border-2 border-gray-100 rounded-2xl focus-visible:ring-black focus-visible:border-black transition-all text-base shadow-sm group-focus-within:shadow-md"
+                      {...field}
+                      disabled={loading}
+                    />
 
-                  <Button
-                    type="submit"
-                    variant={"default"}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-8"
-                    disabled={loading}
-                  >
-                    <PlusIcon />
-                  </Button>
-                </div>
-              </FormControl>
+                    <Button
+                      type="submit"
+                      variant={"default"}
+                      size="icon"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl bg-black text-white hover:bg-gray-800 transition-all hover:scale-105 active:scale-95"
+                      disabled={loading || !field.value}
+                    >
+                      <PlusIcon className="w-5 h-5" />
+                    </Button>
+                  </div>
+                </FormControl>
 
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </form>
-    </Form>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
+    </div>
 
   );
 }

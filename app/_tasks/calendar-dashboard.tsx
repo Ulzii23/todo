@@ -31,7 +31,12 @@ export default function CalendarDashboard({ onDateSelect }: { onDateSelect?: () 
             setLoading(true);
             const monthStr = currentMonth.format("YYYY-MM");
             try {
-                const res = await fetch(`/api/stats?month=${monthStr}`);
+                const token = localStorage.getItem('token');
+                const res = await fetch(`/api/stats?month=${monthStr}`, {
+                    headers: {
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    }
+                });
                 if (res.ok) {
                     const data = await res.json();
                     setStats(data);
