@@ -18,12 +18,14 @@ interface ShinyButtonProps
 }
 
 export const ShinyButton = React.forwardRef<
-  HTMLButtonElement,
+  HTMLDivElement,
   ShinyButtonProps
 >(({ children, className, ...props }, ref) => {
   return (
-    <motion.button
+    <motion.div
       ref={ref}
+      role="button"
+      tabIndex={0}
       className={cn(
         "relative cursor-pointer overflow-hidden rounded-lg border px-6 py-2 font-medium backdrop-blur-xl transition-all duration-300 ease-in-out hover:shadow-md",
         "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800",
@@ -50,11 +52,11 @@ export const ShinyButton = React.forwardRef<
           repeatDelay: 0.5
         }}
         style={{
-          background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)",
+          background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent)",
           transform: "skewX(-25deg)",
         }}
       />
-    </motion.button>
+    </motion.div>
   )
 })
 
